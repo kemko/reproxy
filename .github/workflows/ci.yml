@@ -49,15 +49,6 @@ jobs:
           args: --config ../../.golangci.yml
           working-directory: examples/plugin
 
-      - name: install goveralls
-        run: |
-         go install github.com/mattn/goveralls@latest
-
-      - name: submit coverage
-        run: $(go env GOPATH)/bin/goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -68,7 +59,7 @@ jobs:
       - name: available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
-      - name: build and deploy master image to ghcr.io and dockerhub
+      - name: build and deploy master image to ghcr.io
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
           GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
@@ -86,7 +77,7 @@ jobs:
               --platform linux/amd64,linux/arm/v7,linux/arm64 \
               -t ghcr.io/${USERNAME}/reproxy:${ref} -t ${USERNAME}/reproxy:${ref} .
 
-      - name: deploy tagged (latest) to ghcr.io and dockerhub
+      - name: deploy tagged (latest) to ghcr.io
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         env:
           GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
